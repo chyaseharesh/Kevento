@@ -6,6 +6,7 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+  output   = "./generated/client"
 }
 
 model User {
@@ -85,8 +86,6 @@ model Event {
   userId       String
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
-  terms        Terms[]      @relation(fields: [terms_id], references: [id])
-  homeBanners  HomeBanner[] @relation("EventHomeBanners")
   bookmarkedBy User[]       @relation("UserBookmarks")
   terms_id     String?
   category     Category     @relation(fields: [categoryId], references: [id])
