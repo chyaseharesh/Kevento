@@ -1,0 +1,231 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               String    @id @default(cuid())
+  name             String
+  email            String    @unique
+  password         String?
+  phone            String
+  role             String    @default("USER")
+  emailVerified    DateTime?
+  image            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  resetToken       String?
+  isBlocked        Boolean   @default(false)
+  resetTokenExpiry DateTime?
+
+  tickets   Ticket[]
+  bookmarks Event[]    @relation("UserBookmarks")
+  events    Event[]
+  purchases Purchase[]
+}
+
+model Category {
+  id     String  @id @default(cuid())
+  name   String  @unique
+  events Event[]
+}
+
+model TicketType {
+  id         String       @id @default(cuid())
+  name       String       @unique
+  ticketTier TicketTier[]
+}
+
+model HomeBanner {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  link      String
+  imageUrl  String
+  caption   String
+  order     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+  ARCHIVED
+  UPCOMING
+}
+
+model Terms {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Event {
+  id           String       @id @default(cuid())
+  title        String
+  organizer    String
+  description  String
+  venue        String
+  location     String
+  date         DateTime
+  imageUrl     String?
+  term_id      String?
+  status       EventStatus  @default(DRAFT)
+  totalTicket  Int          @default(0)
+  categoryId   String
+  userId       String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  terms        Terms[]      @relation(fields: [terms_id], references: [id])
+  homeBanners  HomeBanner[] @relation("EventHomeBanners")
+  bookmarkedBy User[]       @relation("UserBookmarks")
+  terms_id     String?
+  category     Category     @relation(fields: [categoryId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+  ticketTiers  TicketTier[]
+  tickets      Ticket[]
+
+  @@index([categoryId])
+  @@index([userId])
+}
+
+model TicketTier {
+  id           String   @id @default(cuid())
+  ticketTypeId String
+  price        Float
+  quantity     Int
+  eventId      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  event      Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  ticketType TicketType @relation(fields: [ticketTypeId], references: [id])
+
+  tickets Ticket[]
+
+  @@index([eventId])
+}
+
+enum TicketStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  USED
+}
+
+model Ticket {
+  id           String       @id @default(cuid())
+  ticketNumber String       @unique
+  status       TicketStatus @default(PENDING)
+  userId       String
+  eventId      String
+  ticketTierId String
+  qrCode       String?      @db.Text
+  paymentProof String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user       User             @relation(fields: [userId], references: [id])
+  event      Event            @relation(fields: [eventId], references: [id])
+  ticketTier TicketTier       @relation(fields: [ticketTierId], references: [id])
+  purchases  PurchaseTicket[]
+
+  @@index([userId])
+  @@index([eventId])
+  @@index([ticketTierId])
+}
+
+enum PurchaseStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  REFUNDED
+  PARTIAL_REFUNDED
+  BLOCKED
+}
+
+model Purchase {
+  id          String         @id @default(cuid())
+  userId      String
+  totalAmount Float
+  status      PurchaseStatus @default(PENDING)
+  // qrCode      String         @unique
+  // qrOptions   Json? // For storing QR code styling options
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user            User              @relation(fields: [userId], references: [id])
+  tickets         PurchaseTicket[]
+  PaymentReceipts PaymentReceipts[]
+
+  @@index([userId])
+}
+
+model PurchaseTicket {
+  id         String   @id @default(cuid())
+  purchaseId String
+  ticketId   String
+  quantity   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id])
+  ticket   Ticket   @relation(fields: [ticketId], references: [ticketNumber])
+
+  @@index([purchaseId])
+  @@index([ticketId])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  createdAt DateTime @default(now())
+}
+
+model PaymentHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  paymentId String
+  amount    Float
+  status    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ErrorLog {
+  id         String   @id @default(cuid())
+  userId     String
+  message    String
+  stackTrace String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model PaymentQR {
+  id        String   @id @default(cuid())
+  qrCode    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PaymentReceipts {
+  id         String   @id @default(cuid())
+  purchaseId String
+  receiptUrl String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id])
+}

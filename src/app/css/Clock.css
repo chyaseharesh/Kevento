@@ -1,0 +1,97 @@
+.clock-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px; /* Added padding for spacing */
+  flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+}
+
+.clock-col {
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  min-width: 80px;
+  background: rgba(34, 34, 34, 0.7); /* Darker background with opacity */
+  transition: all 0.3s ease-in-out; /* Smooth transition for hover effect */
+}
+
+.clock-col:hover {
+  transform: scale(1.05); /* Slight scale effect on hover */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+.clock-timer {
+  font-size: 3rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.clock-label {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-top: 5px;
+}
+
+@media (max-width: 1024px) {
+  .clock-container {
+    gap: 15px; /* Reduce gap for medium screens */
+  }
+
+  .clock-col {
+    padding: 15px;
+    min-width: 70px; /* Adjust min-width for smaller screens */
+  }
+
+  .clock-timer {
+    font-size: 2.5rem; /* Slightly smaller font for medium screens */
+  }
+
+  .clock-label {
+    font-size: 0.9rem; /* Smaller font size for the label */
+  }
+}
+
+@media (max-width: 768px) {
+  .clock-container {
+    flex-direction: column; /* Stack columns vertically */
+    gap: 20px; /* Add vertical gap */
+  }
+
+  .clock-col {
+    padding: 10px;
+    min-width: 100px; /* Ensure each column has enough width */
+  }
+
+  .clock-timer {
+    font-size: 2rem; /* Smaller font size for smaller screens */
+  }
+
+  .clock-label {
+    font-size: 0.85rem; /* Slightly smaller label font */
+  }
+}
+
+@media (max-width: 680px) {
+  .clock-container {
+    /* Reduce padding for very small screens */
+    padding: 10px;
+    min-height:300px; 
+    width: clamp(50px,100%,500px);
+  }
+
+  .clock-col {
+    padding: 8px;
+    min-width: 60px; /* Even smaller min-width for very small screens */
+  }
+
+  .clock-timer {
+    font-size: 1.8rem; /* Smaller font for very small screens */
+  }
+
+  .clock-label {
+    font-size: 0.8rem; /* Smaller label font size */
+  }
+}
